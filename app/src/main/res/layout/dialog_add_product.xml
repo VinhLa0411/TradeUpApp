@@ -1,0 +1,114 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/etName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Tên hàng" />
+
+        <EditText
+            android:id="@+id/etQuantity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Số lượng"
+            android:inputType="number" />
+
+        <EditText
+            android:id="@+id/etManufacturer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Hãng sản xuất" />
+
+        <EditText
+            android:id="@+id/etYear"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Năm sản xuất"
+            android:inputType="number" />
+
+        <EditText
+            android:id="@+id/etPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Giá sản phẩm"
+            android:inputType="numberDecimal" />
+
+        <!-- Vùng chọn ảnh sản phẩm -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chọn tối đa 4 ảnh sản phẩm"
+            android:textStyle="bold"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="4dp"/>
+
+        <LinearLayout
+            android:id="@+id/layoutImages"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/img1"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:src="@drawable/ic_add_a_photo"
+                android:scaleType="centerCrop"
+                android:background="@drawable/bg_avatar_circle"
+                android:layout_margin="4dp" />
+
+            <ImageView
+                android:id="@+id/img2"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:src="@drawable/ic_add_a_photo"
+                android:scaleType="centerCrop"
+                android:background="@drawable/bg_avatar_circle"
+                android:layout_margin="4dp" />
+
+            <ImageView
+                android:id="@+id/img3"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:src="@drawable/ic_add_a_photo"
+                android:scaleType="centerCrop"
+                android:background="@drawable/bg_avatar_circle"
+                android:layout_margin="4dp" />
+
+            <ImageView
+                android:id="@+id/img4"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:src="@drawable/ic_add_a_photo"
+                android:scaleType="centerCrop"
+                android:background="@drawable/bg_avatar_circle"
+                android:layout_margin="4dp" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnChooseImages"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chọn ảnh"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"/>
+
+        <Button
+            android:id="@+id/btnPost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Đăng sản phẩm"
+            android:backgroundTint="#009688"
+            android:textColor="#fff"
+            android:layout_marginTop="16dp" />
+
+    </LinearLayout>
+</ScrollView>

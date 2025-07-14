@@ -1,0 +1,173 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F2F6F7">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="24dp"
+        android:gravity="center_horizontal">
+
+        <!-- Card chứa form -->
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card"
+            android:padding="24dp"
+            android:elevation="7dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="24dp"
+            android:gravity="center_horizontal">
+
+            <!-- Tiêu đề -->
+            <TextView
+                android:text="Đăng sản phẩm mới"
+                android:textStyle="bold"
+                android:textColor="#009688"
+                android:textSize="22sp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_marginBottom="20dp" />
+
+            <!-- Form input -->
+            <TextView
+                android:text="Tên sản phẩm"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Label"/>
+
+            <EditText
+                android:id="@+id/etName"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                style="@style/FormEditText"
+                android:hint="VD: Laptop Dell XPS"
+                android:inputType="text"/>
+
+            <TextView
+                android:text="Số lượng"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Label"/>
+
+            <EditText
+                android:id="@+id/etQuantity"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                style="@style/FormEditText"
+                android:hint="VD: 1"
+                android:inputType="number"/>
+
+            <TextView
+                android:text="Hãng sản xuất"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Label"/>
+
+            <EditText
+                android:id="@+id/etBrand"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                style="@style/FormEditText"
+                android:hint="VD: Dell, Samsung..."
+                android:inputType="text"/>
+
+            <TextView
+                android:text="Năm sản xuất"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Label"/>
+
+            <EditText
+                android:id="@+id/etYear"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                style="@style/FormEditText"
+                android:hint="VD: 2022"
+                android:inputType="number"/>
+
+            <TextView
+                android:text="Giá sản phẩm (VNĐ)"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Label"/>
+
+            <EditText
+                android:id="@+id/etPrice"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                style="@style/FormEditText"
+                android:hint="VD: 12.000.000"
+                android:inputType="numberDecimal"/>
+            <TextView
+                android:text="Mô tả sản phẩm"
+                android:textColor="#222"
+                android:textStyle="bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"/>
+
+            <EditText
+                android:id="@+id/etDescription"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:hint="Nhập mô tả sản phẩm (tuỳ chọn)"
+                android:maxLines="5"
+                android:inputType="textMultiLine"
+                android:textSize="15sp"
+                android:layout_marginBottom="12dp"/>
+
+
+
+            <!-- Ảnh sản phẩm -->
+            <TextView
+                android:text="Ảnh sản phẩm (1-4 ảnh)"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Label"
+                android:layout_marginTop="12dp"/>
+
+            <!-- Khung thumbnail ảnh -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="110dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/bg_thumbbar"
+                android:padding="6dp"
+                android:contentDescription="@string/product_images">
+
+                <LinearLayout
+                    android:id="@+id/layoutImages"
+                    android:orientation="horizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"/>
+            </HorizontalScrollView>
+
+            <Button
+                android:id="@+id/btnPickImages"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="14dp"
+                android:backgroundTint="#25b39e"
+                android:drawableStart="@drawable/ic_add_photo"
+                android:text="Chọn ảnh"
+                android:textColor="#fff"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnSubmitProduct"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="Đăng sản phẩm"
+                android:backgroundTint="#009688"
+                android:textColor="#fff"
+                android:textStyle="bold"
+                android:elevation="3dp"/>
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

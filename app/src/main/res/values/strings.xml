@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">TradeUp</string>
+    <string name="product_images">Ảnh sản phẩm</string>
+
+
+    <string name="default_web_client_id">1:16842916203:android:5c6ef295864accbabfcc2e.apps.googleusercontent.com</string>
+    <!-- Thay YOUR_WEB_CLIENT_ID bằng giá trị đúng của bạn từ Firebase -->
+</resources>
