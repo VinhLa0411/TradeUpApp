@@ -3,6 +3,8 @@ package com.example.tradeup;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Base64;
+import android.widget.Toast;
 import android.os.Bundle;
 import android.view.*;
 import android.widget.ImageView;
@@ -22,7 +24,7 @@ public class ChatFragment extends Fragment {
     private RecyclerView rvChatList;
     private TextView tvEmptyChat;
     private ChatListAdapter adapter;
-    private List<ChatItem> chatList = new ArrayList<>();
+    private final List<ChatItem> chatList = new ArrayList<>();
     private String currentUserId;
 
     @Nullable
@@ -34,7 +36,7 @@ public class ChatFragment extends Fragment {
         tvEmptyChat = v.findViewById(R.id.tvEmptyChat);
 
         currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        adapter = new ChatListAdapter(chatList, item -> openChat(item));
+        adapter = new ChatListAdapter(chatList, this::openChat);
         rvChatList.setLayoutManager(new LinearLayoutManager(getContext()));
         rvChatList.setAdapter(adapter);
 
@@ -59,12 +61,12 @@ public class ChatFragment extends Fragment {
                                         .document(otherId)
                                         .get()
                                         .addOnSuccessListener(userDoc -> {
-                                            String otherName = "";
-                                            String photoBase64 = "";
-                                            if (userDoc.exists()) {
-                                                otherName = userDoc.getString("name");
-                                                photoBase64 = userDoc.getString("photoBase64");
-                                            }
+                                            String otherName = userDoc.getString("name");
+                                            String photoBase64 = userDoc.getString("photoBase64");
+
+                                            if (otherName == null) otherName = "Người dùng";
+                                            if (photoBase64 == null) photoBase64 = "";
+
                                             chatList.add(new ChatItem(chatId, otherId, otherName, photoBase64, lastMsg, lastTimestamp));
                                             adapter.notifyDataSetChanged();
                                             tvEmptyChat.setVisibility(chatList.isEmpty() ? View.VISIBLE : View.GONE);
@@ -81,11 +83,16 @@ public class ChatFragment extends Fragment {
     }
 
     private void openChat(ChatItem item) {
-        Intent intent = new Intent(getContext(), ChatDetailActivity.class);
+        if (item == null || item.chatId == null || item.otherUserId == null) {
+            Toast.makeText(getContext(), "Không thể mở đoạn chat!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Intent intent = new Intent(getActivity(), ChatDetailActivity.class);
         intent.putExtra("chatId", item.chatId);
         intent.putExtra("otherUserId", item.otherUserId);
         intent.putExtra("otherUserName", item.userName);
-        intent.putExtra("avatarBase64", item.photoBase64); // truyền avatar đúng!
+        intent.putExtra("avatarBase64", item.photoBase64); // truyền avatar để hiển thị trong ChatDetail
         startActivity(intent);
     }
 
@@ -94,7 +101,10 @@ public class ChatFragment extends Fragment {
         private final List<ChatItem> list;
         private final OnChatClickListener listener;
 
-        public ChatListAdapter(List<ChatItem> list, OnChatClickListener l) { this.list = list; this.listener = l; }
+        public ChatListAdapter(List<ChatItem> list, OnChatClickListener l) {
+            this.list = list;
+            this.listener = l;
+        }
 
         @NonNull
         @Override
@@ -106,14 +116,16 @@ public class ChatFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull ChatVH h, int pos) {
             ChatItem item = list.get(pos);
-            h.tvName.setText(item.userName != null ? item.userName : "Chưa rõ tên");
+            h.tvName.setText(item.userName != null ? item.userName : "Người dùng");
             h.tvLastMessage.setText(item.lastMessage != null ? item.lastMessage : "");
 
-            // HIỂN THỊ AVATAR NẾU CÓ, KHÔNG CÓ DÙNG ICON MẶC ĐỊNH
             if (item.photoBase64 != null && !item.photoBase64.isEmpty()) {
-                Bitmap bm = base64ToBitmap(item.photoBase64);
-                if (bm != null) h.imgAvatar.setImageBitmap(bm);
-                else h.imgAvatar.setImageResource(R.drawable.ic_user);
+                Bitmap bm = decodeBase64(item.photoBase64);
+                if (bm != null) {
+                    h.imgAvatar.setImageBitmap(bm);
+                } else {
+                    h.imgAvatar.setImageResource(R.drawable.ic_user);
+                }
             } else {
                 h.imgAvatar.setImageResource(R.drawable.ic_user);
             }
@@ -122,11 +134,14 @@ public class ChatFragment extends Fragment {
         }
 
         @Override
-        public int getItemCount() { return list.size(); }
+        public int getItemCount() {
+            return list.size();
+        }
 
         static class ChatVH extends RecyclerView.ViewHolder {
             ImageView imgAvatar;
             TextView tvName, tvLastMessage;
+
             public ChatVH(@NonNull View v) {
                 super(v);
                 imgAvatar = v.findViewById(R.id.imgAvatar);
@@ -134,12 +149,18 @@ public class ChatFragment extends Fragment {
                 tvLastMessage = v.findViewById(R.id.tvLastMessage);
             }
         }
-        public interface OnChatClickListener { void onClick(ChatItem item);}
-        private Bitmap base64ToBitmap(String base64Str) {
+
+        public interface OnChatClickListener {
+            void onClick(ChatItem item);
+        }
+
+        private Bitmap decodeBase64(String base64) {
             try {
-                byte[] bytes = android.util.Base64.decode(base64Str, android.util.Base64.DEFAULT);
+                byte[] bytes = Base64.decode(base64, Base64.DEFAULT);
                 return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-            } catch (Exception e) { return null; }
+            } catch (Exception e) {
+                return null;
+            }
         }
     }
 
@@ -147,9 +168,14 @@ public class ChatFragment extends Fragment {
     static class ChatItem {
         String chatId, otherUserId, userName, photoBase64, lastMessage;
         long lastTimestamp;
+
         public ChatItem(String chatId, String otherUserId, String userName, String photoBase64, String lastMessage, long lastTimestamp) {
-            this.chatId = chatId; this.otherUserId = otherUserId; this.userName = userName; this.photoBase64 = photoBase64;
-            this.lastMessage = lastMessage; this.lastTimestamp = lastTimestamp;
+            this.chatId = chatId;
+            this.otherUserId = otherUserId;
+            this.userName = userName;
+            this.photoBase64 = photoBase64;
+            this.lastMessage = lastMessage;
+            this.lastTimestamp = lastTimestamp;
         }
     }
 }

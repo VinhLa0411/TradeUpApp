@@ -4,11 +4,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.format.DateFormat;
 import android.util.Base64;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.view.*;
+import android.widget.*;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,9 +16,9 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatVH
     private final List<ChatItem> list;
     private final OnChatClickListener listener;
 
-    public ChatListAdapter(List<ChatItem> list, OnChatClickListener l) {
+    public ChatListAdapter(List<ChatItem> list, OnChatClickListener listener) {
         this.list = list;
-        this.listener = l;
+        this.listener = listener;
     }
 
     @NonNull
@@ -32,15 +29,18 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatVH
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ChatVH h, int pos) {
-        ChatItem item = list.get(pos);
+    public void onBindViewHolder(@NonNull ChatVH h, int position) {
+        ChatItem item = list.get(position);
+
+        // Tên người dùng
         h.tvName.setText(item.userName != null ? item.userName : "Chưa rõ tên");
+
+        // Tin nhắn cuối
         h.tvLastMessage.setText(item.lastMessage != null ? item.lastMessage : "");
 
-        // Show avatar (dùng trường avatarBase64 hoặc photoBase64, tuỳ bạn)
-        String avatar = item.avatarBase64; // Nếu dùng photoBase64, sửa lại thành item.photoBase64
-        if (avatar != null && !avatar.isEmpty()) {
-            Bitmap bm = decodeBase64(avatar);
+        // Avatar (base64)
+        if (item.avatarBase64 != null && !item.avatarBase64.isEmpty()) {
+            Bitmap bm = decodeBase64(item.avatarBase64);
             if (bm != null) {
                 h.imgAvatar.setImageBitmap(bm);
             } else {
@@ -50,38 +50,40 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatVH
             h.imgAvatar.setImageResource(R.drawable.ic_user);
         }
 
-        // Hiển thị thời gian tin nhắn cuối cùng nếu có
-        if (h.tvLastTime != null) {
-            if (item.lastTimestamp > 0) {
-                h.tvLastTime.setVisibility(View.VISIBLE);
-                h.tvLastTime.setText(DateFormat.format("HH:mm", item.lastTimestamp));
-            } else {
-                h.tvLastTime.setVisibility(View.GONE);
-            }
+        // Thời gian cuối cùng (nếu có)
+        if (item.lastTimestamp > 0) {
+            h.tvLastTime.setVisibility(View.VISIBLE);
+            h.tvLastTime.setText(DateFormat.format("HH:mm", item.lastTimestamp));
+        } else {
+            h.tvLastTime.setVisibility(View.GONE);
         }
 
+        // Sự kiện click
         h.itemView.setOnClickListener(v -> listener.onClick(item));
     }
 
     @Override
-    public int getItemCount() { return list.size(); }
+    public int getItemCount() {
+        return list.size();
+    }
 
-    public static class ChatVH extends RecyclerView.ViewHolder {
+    public interface OnChatClickListener {
+        void onClick(ChatItem item);
+    }
+
+    static class ChatVH extends RecyclerView.ViewHolder {
         ImageView imgAvatar;
         TextView tvName, tvLastMessage, tvLastTime;
+
         public ChatVH(@NonNull View v) {
             super(v);
             imgAvatar = v.findViewById(R.id.imgAvatar);
             tvName = v.findViewById(R.id.tvUserName);
             tvLastMessage = v.findViewById(R.id.tvLastMessage);
-            // Nếu trong layout có TextView hiển thị thời gian cuối, lấy luôn:
-            tvLastTime = v.findViewById(R.id.tvLastTime); // hoặc null nếu không có trường này trong layout
+            tvLastTime = v.findViewById(R.id.tvLastTime); // TextView thời gian cuối
         }
     }
 
-    public interface OnChatClickListener { void onClick(ChatItem item); }
-
-    // Convert base64 String to Bitmap
     private Bitmap decodeBase64(String base64) {
         try {
             byte[] bytes = Base64.decode(base64, Base64.DEFAULT);

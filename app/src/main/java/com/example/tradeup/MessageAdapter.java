@@ -6,8 +6,10 @@ import android.text.format.DateFormat;
 import android.util.Base64;
 import android.view.*;
 import android.widget.*;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.List;
 
 public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -51,23 +53,22 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         } else {
             ReceivedVH vh = (ReceivedVH) holder;
             bindMessage(vh.tvMsg, vh.imgMsg, vh.tvTime, msg);
-            if (vh.imgAvatar != null) {
-                if (avatarBase64 != null && !avatarBase64.isEmpty()) {
-                    Bitmap bm = base64ToBitmap(avatarBase64);
-                    if (bm != null) {
-                        vh.imgAvatar.setImageBitmap(bm);
-                    } else {
-                        vh.imgAvatar.setImageResource(R.drawable.ic_user);
-                    }
+
+            if (avatarBase64 != null && !avatarBase64.isEmpty()) {
+                Bitmap bm = base64ToBitmap(avatarBase64);
+                if (bm != null) {
+                    vh.imgAvatar.setImageBitmap(bm);
                 } else {
                     vh.imgAvatar.setImageResource(R.drawable.ic_user);
                 }
+            } else {
+                vh.imgAvatar.setImageResource(R.drawable.ic_user);
             }
         }
     }
 
     private void bindMessage(TextView tvMsg, ImageView imgMsg, TextView tvTime, ChatDetailActivity.Message msg) {
-        // Hiển thị text nếu có
+        // Text
         if (msg.text != null && !msg.text.isEmpty()) {
             tvMsg.setVisibility(View.VISIBLE);
             tvMsg.setText(msg.text);
@@ -75,7 +76,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             tvMsg.setVisibility(View.GONE);
         }
 
-        // Hiển thị ảnh nếu có
+        // Image
         if (msg.image != null && !msg.image.isEmpty()) {
             imgMsg.setVisibility(View.VISIBLE);
             Bitmap bitmap = base64ToBitmap(msg.image);
@@ -88,7 +89,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             imgMsg.setVisibility(View.GONE);
         }
 
-        // Hiển thị thời gian gửi
+        // Time
         tvTime.setText(DateFormat.format("HH:mm", msg.timestamp));
     }
 

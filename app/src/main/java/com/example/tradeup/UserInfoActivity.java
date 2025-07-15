@@ -73,15 +73,30 @@ public class UserInfoActivity extends AppCompatActivity {
     private String imageUriToBase64(Uri uri) {
         try {
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+
+            // Giảm kích thước nếu vượt quá 400px (nên dùng avatar nhỏ)
+            int maxSize = 400;
+            int width = bitmap.getWidth();
+            int height = bitmap.getHeight();
+            float scale = Math.min((float) maxSize / width, (float) maxSize / height);
+
+            int newWidth = Math.round(width * scale);
+            int newHeight = Math.round(height * scale);
+
+            Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+
+            // Nén ảnh với chất lượng vừa phải
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
+            resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 60, baos); // Chất lượng 60%
             byte[] imageBytes = baos.toByteArray();
+
             return Base64.encodeToString(imageBytes, Base64.DEFAULT);
         } catch (Exception e) {
             e.printStackTrace();
             return "";
         }
     }
+
 
     // Step-by-step chọn năm → tháng → ngày
     private void showStepByStepDatePicker() {

@@ -9,9 +9,11 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.widget.*;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.*;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.*;
 import com.vanniktech.emoji.EmojiEditText;
@@ -29,7 +31,8 @@ public class ChatDetailActivity extends AppCompatActivity {
     private ImageButton btnSend, btnSendImage, btnEmoji;
     private MessageAdapter adapter;
     private List<Message> messageList = new ArrayList<>();
-    private String chatId, currentUserId, otherUserId, otherUserName, avatarBase64;
+    private String chatId, currentUserId, otherUserId, otherUserName;
+    private String avatarBase64 = "";
     private EmojiPopup emojiPopup;
 
     @Override
@@ -37,33 +40,53 @@ public class ChatDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_detail);
 
+        // Ánh xạ các view
         rvMessages = findViewById(R.id.rvMessages);
         etMessage = findViewById(R.id.etMessage);
         btnSend = findViewById(R.id.btnSend);
         btnSendImage = findViewById(R.id.btnSendImage);
         btnEmoji = findViewById(R.id.btnEmoji);
 
-        // Init emoji popup
-        emojiPopup = EmojiPopup.Builder.fromRootView(findViewById(android.R.id.content)).build(etMessage);
+        // Emoji popup đúng rootView để hiện dưới cùng
+        emojiPopup = EmojiPopup.Builder
+                .fromRootView(findViewById(android.R.id.content))
+                .setKeyboardAnimationStyle(android.R.style.Animation_InputMethod)
+                .build(etMessage);
 
         btnEmoji.setOnClickListener(v -> emojiPopup.toggle());
-
+        etMessage.setOnClickListener(v -> {
+            if (emojiPopup.isShowing()) {
+                emojiPopup.dismiss();
+            }
+        });
+        // Nhận dữ liệu chat
         chatId = getIntent().getStringExtra("chatId");
         otherUserId = getIntent().getStringExtra("otherUserId");
         otherUserName = getIntent().getStringExtra("otherUserName");
-        avatarBase64 = getIntent().getStringExtra("avatarBase64");
         currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         setTitle("Chat với " + (otherUserName != null ? otherUserName : "Người dùng"));
 
-        adapter = new MessageAdapter(messageList, currentUserId, avatarBase64);
-        rvMessages.setLayoutManager(new LinearLayoutManager(this));
-        rvMessages.setAdapter(adapter);
-
-        loadMessages();
+        fetchAvatarAndInitChat();
 
         btnSend.setOnClickListener(v -> sendMessage(null));
         btnSendImage.setOnClickListener(v -> pickImage());
+    }
+
+    private void fetchAvatarAndInitChat() {
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(otherUserId)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    if (snapshot.exists()) {
+                        avatarBase64 = snapshot.getString("photoBase64");
+                    }
+                    adapter = new MessageAdapter(messageList, currentUserId, avatarBase64);
+                    rvMessages.setLayoutManager(new LinearLayoutManager(this));
+                    rvMessages.setAdapter(adapter);
+                    loadMessages();
+                });
     }
 
     private void loadMessages() {
