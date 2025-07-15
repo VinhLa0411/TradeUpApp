@@ -22,8 +22,7 @@ android {
 }
 
 dependencies {
-    implementation("com.vanniktech:emoji:0.16.0")
-    implementation("com.vanniktech:emoji-google:0.16.0")
+    implementation ("com.vanniktech:emoji-google:0.9.0")
     implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
 
     // Firebase Auth

@@ -1,47 +1,57 @@
 package com.example.tradeup;
 
+import android.content.ClipData;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.text.format.DateFormat;
 import android.util.Base64;
-import android.view.*;
 import android.widget.*;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.*;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.*;
+import com.vanniktech.emoji.EmojiEditText;
+import com.vanniktech.emoji.EmojiPopup;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.*;
 
 public class ChatDetailActivity extends AppCompatActivity {
     private static final int PICK_IMAGE_REQUEST = 1699;
 
     private RecyclerView rvMessages;
-    private EditText etMessage;
-    private ImageButton btnSend, btnSendImage;
+    private EmojiEditText etMessage;
+    private ImageButton btnSend, btnSendImage, btnEmoji;
     private MessageAdapter adapter;
     private List<Message> messageList = new ArrayList<>();
     private String chatId, currentUserId, otherUserId, otherUserName, avatarBase64;
+    private EmojiPopup emojiPopup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_detail);
+
         rvMessages = findViewById(R.id.rvMessages);
         etMessage = findViewById(R.id.etMessage);
         btnSend = findViewById(R.id.btnSend);
-        btnSendImage = findViewById(R.id.btnSendImage); // QUAN TRỌNG: Phải khởi tạo!
+        btnSendImage = findViewById(R.id.btnSendImage);
+        btnEmoji = findViewById(R.id.btnEmoji);
+
+        // Init emoji popup
+        emojiPopup = EmojiPopup.Builder.fromRootView(findViewById(android.R.id.content)).build(etMessage);
+
+        btnEmoji.setOnClickListener(v -> emojiPopup.toggle());
 
         chatId = getIntent().getStringExtra("chatId");
         otherUserId = getIntent().getStringExtra("otherUserId");
         otherUserName = getIntent().getStringExtra("otherUserName");
-        avatarBase64 = getIntent().getStringExtra("avatarBase64"); // PHẢI là photoBase64 lấy từ Firestore của người còn lại!
+        avatarBase64 = getIntent().getStringExtra("avatarBase64");
         currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         setTitle("Chat với " + (otherUserName != null ? otherUserName : "Người dùng"));
@@ -77,7 +87,6 @@ public class ChatDetailActivity extends AppCompatActivity {
 
     private void sendMessage(@Nullable String imageBase64) {
         String text = etMessage.getText().toString().trim();
-        // Nếu gửi ảnh thì text có thể để trống
         if (text.isEmpty() && imageBase64 == null) return;
 
         Map<String, Object> msg = new HashMap<>();
@@ -87,14 +96,12 @@ public class ChatDetailActivity extends AppCompatActivity {
         msg.put("timestamp", System.currentTimeMillis());
         msg.put("image", imageBase64);
 
-        // Lưu vào messages subcollection
         FirebaseFirestore.getInstance()
                 .collection("chats")
                 .document(chatId)
                 .collection("messages")
                 .add(msg);
 
-        // Cập nhật lastMessage cho chat
         FirebaseFirestore.getInstance()
                 .collection("chats")
                 .document(chatId)
@@ -107,27 +114,41 @@ public class ChatDetailActivity extends AppCompatActivity {
     }
 
     private void pickImage() {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         startActivityForResult(Intent.createChooser(intent, "Chọn ảnh gửi chat"), PICK_IMAGE_REQUEST);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), data.getData());
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
-                String imgBase64 = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
-                sendMessage(imgBase64);
-            } catch (Exception e) {
-                Toast.makeText(this, "Lỗi gửi ảnh", Toast.LENGTH_SHORT).show();
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null) {
+            List<Uri> imageUris = new ArrayList<>();
+            if (data.getClipData() != null) {
+                ClipData clipData = data.getClipData();
+                for (int i = 0; i < clipData.getItemCount(); i++) {
+                    imageUris.add(clipData.getItemAt(i).getUri());
+                }
+            } else if (data.getData() != null) {
+                imageUris.add(data.getData());
+            }
+
+            for (Uri uri : imageUris) {
+                try {
+                    InputStream inputStream = getContentResolver().openInputStream(uri);
+                    Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
+                    String imgBase64 = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+                    sendMessage(imgBase64);
+                } catch (Exception e) {
+                    Toast.makeText(this, "Lỗi gửi ảnh", Toast.LENGTH_SHORT).show();
+                }
             }
         }
     }
 
-    // Message model class (giống như MessageAdapter dùng)
     public static class Message {
         public String senderId, receiverId, text, image;
         public long timestamp;

@@ -13,7 +13,7 @@ import java.util.List;
 public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final List<ChatDetailActivity.Message> messages;
     private final String currentUserId;
-    private final String avatarBase64; // Avatar của người kia (photoBase64)
+    private final String avatarBase64;
 
     private static final int TYPE_SENT = 1;
     private static final int TYPE_RECEIVED = 2;
@@ -51,8 +51,6 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         } else {
             ReceivedVH vh = (ReceivedVH) holder;
             bindMessage(vh.tvMsg, vh.imgMsg, vh.tvTime, msg);
-
-            // Hiển thị avatar (chỉ bên nhận)
             if (vh.imgAvatar != null) {
                 if (avatarBase64 != null && !avatarBase64.isEmpty()) {
                     Bitmap bm = base64ToBitmap(avatarBase64);
@@ -68,21 +66,29 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
     }
 
-    // Hàm chung để gán text/ảnh/gio
     private void bindMessage(TextView tvMsg, ImageView imgMsg, TextView tvTime, ChatDetailActivity.Message msg) {
+        // Hiển thị text nếu có
         if (msg.text != null && !msg.text.isEmpty()) {
             tvMsg.setVisibility(View.VISIBLE);
             tvMsg.setText(msg.text);
         } else {
             tvMsg.setVisibility(View.GONE);
         }
+
+        // Hiển thị ảnh nếu có
         if (msg.image != null && !msg.image.isEmpty()) {
             imgMsg.setVisibility(View.VISIBLE);
             Bitmap bitmap = base64ToBitmap(msg.image);
-            imgMsg.setImageBitmap(bitmap);
+            if (bitmap != null) {
+                imgMsg.setImageBitmap(bitmap);
+            } else {
+                imgMsg.setImageResource(R.drawable.ic_add_photo); // fallback
+            }
         } else {
             imgMsg.setVisibility(View.GONE);
         }
+
+        // Hiển thị thời gian gửi
         tvTime.setText(DateFormat.format("HH:mm", msg.timestamp));
     }
 
@@ -91,10 +97,10 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         return messages.size();
     }
 
-    // ViewHolder cho tin nhắn gửi
     static class SentVH extends RecyclerView.ViewHolder {
         TextView tvMsg, tvTime;
         ImageView imgMsg;
+
         SentVH(@NonNull View v) {
             super(v);
             tvMsg = v.findViewById(R.id.tvMsg);
@@ -103,10 +109,10 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
     }
 
-    // ViewHolder cho tin nhắn nhận (có avatar)
     static class ReceivedVH extends RecyclerView.ViewHolder {
         TextView tvMsg, tvTime;
         ImageView imgMsg, imgAvatar;
+
         ReceivedVH(@NonNull View v) {
             super(v);
             tvMsg = v.findViewById(R.id.tvMsg);

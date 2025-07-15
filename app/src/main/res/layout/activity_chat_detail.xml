@@ -1,26 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
 
+    <!-- Danh sách tin nhắn -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvMessages"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="8dp"/>
+        android:padding="8dp"
+        android:clipToPadding="false"
+        android:scrollbars="vertical" />
+
+    <!-- Đường phân cách -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#CCCCCC" />
+
+    <!-- Thanh nhập tin nhắn -->
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="6dp">
+        android:padding="8dp"
+        android:background="#F7F7F7"
+        android:gravity="center_vertical">
 
-        <EditText
+        <!-- Nút Emoji -->
+        <ImageButton
+            android:id="@+id/btnEmoji"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_emoji"
+            android:contentDescription="Chèn emoji"
+            android:background="@null"
+            android:layout_marginEnd="6dp" />
+
+        <!-- Emoji EditText -->
+        <com.vanniktech.emoji.EmojiEditText
             android:id="@+id/etMessage"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="40dp"
-            android:hint="Nhập tin nhắn..."/>
+            android:hint="Nhập tin nhắn..."
+            android:padding="10dp"
+            android:background="@drawable/bg_edittext"
+            android:textColor="#000000"
+            android:textSize="14sp"
+            app:emojiSize="20sp" />
 
         <!-- Nút gửi ảnh -->
         <ImageButton
@@ -31,7 +63,7 @@
             android:contentDescription="Gửi ảnh"
             android:background="@null"
             android:layout_marginStart="6dp"
-            android:layout_marginEnd="2dp"/>
+            android:layout_marginEnd="4dp" />
 
         <!-- Nút gửi tin nhắn -->
         <ImageButton
@@ -39,6 +71,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@drawable/ic_send"
-            android:background="@null"/>
+            android:contentDescription="Gửi tin nhắn"
+            android:background="@null" />
     </LinearLayout>
 </LinearLayout>
