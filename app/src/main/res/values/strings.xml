@@ -2,7 +2,19 @@
     <string name="app_name">TradeUp</string>
     <string name="product_images">Ảnh sản phẩm</string>
 
+    <!-- Các tuỳ chọn sắp xếp cho Spinner -->
+    <string-array name="sort_options">
+        <item>Mặc định</item>
+        <item>Giá tăng dần</item>
+        <item>Giá giảm dần</item>
+        <item>Ngày đăng mới nhất</item>
+        <item>Ngày đăng cũ nhất</item>
+        <item>Tên A → Z</item>
+        <item>Tên Z → A</item>
+    </string-array>
 
-    <string name="default_web_client_id">1:16842916203:android:5c6ef295864accbabfcc2e.apps.googleusercontent.com</string>
-    <!-- Thay YOUR_WEB_CLIENT_ID bằng giá trị đúng của bạn từ Firebase -->
+    <!-- ID từ Firebase (chỉ dùng khi login Google) -->
+    <string name="default_web_client_id">
+        1:16842916203:android:5c6ef295864accbabfcc2e.apps.googleusercontent.com
+    </string>
 </resources>

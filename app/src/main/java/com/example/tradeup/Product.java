@@ -3,25 +3,28 @@ package com.example.tradeup;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * Model đại diện cho một sản phẩm được lưu trữ trong Firestore.
+ */
 public class Product implements Serializable {
-    private String id;
-    private String name;
-    private int quantity;
-    private String manufacturer;   // Lưu brand (hãng)
-    private int year;
-    private double price;
-    private List<String> images;   // Danh sách base64 hoặc URL ảnh (tùy bạn lưu Firestore)
-    private String ownerId;        // ID Firebase người đăng
-    private String ownerName;      // Tên người đăng (hiện lên trang chủ)
-    private String description;    // Mô tả sản phẩm (tùy chọn)
+    private String id;              // ID của sản phẩm (Firestore document ID)
+    private String name;            // Tên sản phẩm
+    private int quantity;           // Số lượng tồn kho
+    private String manufacturer;    // Tên hãng sản xuất (brand)
+    private int year;               // Năm sản xuất
+    private double price;           // Giá sản phẩm
+    private List<String> images;    // Danh sách ảnh (base64 hoặc URL)
+    private String ownerId;         // ID người đăng sản phẩm
+    private String ownerName;       // Tên người đăng (hiển thị)
+    private String description;     // Mô tả sản phẩm
+    private int views = 0;          // Lượt xem sản phẩm
+    private long createdAt = 0L;    // Thời gian đăng (timestamp milliseconds)
 
-    public Product() {} // BẮT BUỘC cho Firestore
+    // Constructor mặc định - BẮT BUỘC cho Firestore
+    public Product() {}
 
-    private int views = 0;
-    public int getViews() { return views; }
-    public void setViews(int views) { this.views = views; }
+    // ==================== GETTERS & SETTERS ====================
 
-    // ---- GETTERS & SETTERS ----
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -34,7 +37,7 @@ public class Product implements Serializable {
     public String getManufacturer() { return manufacturer; }
     public void setManufacturer(String manufacturer) { this.manufacturer = manufacturer; }
 
-    // Alias cho brand
+    // Alias để tiện gọi là brand
     public String getBrand() { return manufacturer; }
     public void setBrand(String brand) { this.manufacturer = brand; }
 
@@ -44,25 +47,28 @@ public class Product implements Serializable {
     public double getPrice() { return price; }
     public void setPrice(double price) { this.price = price; }
 
-    // Ảnh (base64 hoặc URL)
     public List<String> getImages() { return images; }
     public void setImages(List<String> images) { this.images = images; }
 
-    // Alias cho tương thích các adapter cũ/new
+    // Aliases nếu bạn dùng tên cũ
     public List<String> getImagesBase64() { return images; }
     public void setImagesBase64(List<String> imagesBase64) { this.images = imagesBase64; }
 
     public List<String> getImageUrls() { return images; }
     public void setImageUrls(List<String> imageUrls) { this.images = imageUrls; }
 
-    // Người đăng
     public String getOwnerId() { return ownerId; }
     public void setOwnerId(String ownerId) { this.ownerId = ownerId; }
 
     public String getOwnerName() { return ownerName; }
     public void setOwnerName(String ownerName) { this.ownerName = ownerName; }
 
-    // Mô tả sản phẩm
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public int getViews() { return views; }
+    public void setViews(int views) { this.views = views; }
+
+    public long getCreatedAt() { return createdAt; }
+    public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
 }

@@ -1,6 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:paddingBottom="70dp"
     android:background="#f8f9fa">
 
     <LinearLayout
@@ -9,7 +12,7 @@
         android:orientation="vertical"
         android:padding="18dp">
 
-        <!-- Slider ảnh sản phẩm -->
+        <!-- Slider ảnh -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="240dp"
@@ -21,7 +24,7 @@
                 android:layout_height="match_parent" />
         </androidx.cardview.widget.CardView>
 
-        <!-- Dots chỉ số ảnh -->
+        <!-- Dots -->
         <LinearLayout
             android:id="@+id/layoutDots"
             android:layout_width="wrap_content"
@@ -31,7 +34,7 @@
             android:layout_gravity="center"
             android:layout_marginBottom="16dp" />
 
-        <!-- Thông tin chính -->
+        <!-- Thông tin sản phẩm -->
         <TextView
             android:id="@+id/tvName"
             android:layout_width="match_parent"
@@ -86,7 +89,6 @@
             android:textColor="#424242"
             android:layout_marginBottom="6dp"/>
 
-        <!-- Chủ đăng -->
         <TextView
             android:id="@+id/tvOwner"
             android:layout_width="wrap_content"
@@ -117,7 +119,62 @@
             android:textColor="#555"
             android:layout_marginBottom="22dp"/>
 
-        <!-- Nút chức năng -->
+        <!-- Đánh giá sản phẩm -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Đánh giá sản phẩm"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="#212121"
+            android:layout_marginTop="8dp" />
+
+        <RatingBar
+            android:id="@+id/productRatingBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:numStars="5"
+            android:stepSize="0.5"
+            android:isIndicator="true"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/tvProductReviews"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="(0 đánh giá)"
+            android:textSize="14sp"
+            android:textColor="#555555"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Đánh giá người bán -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Đánh giá người bán"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="#212121" />
+
+        <RatingBar
+            android:id="@+id/sellerRatingBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:numStars="5"
+            android:stepSize="0.5"
+            android:isIndicator="true"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/tvSellerReviews"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="(0 đánh giá)"
+            android:textSize="14sp"
+            android:textColor="#555555"
+            android:layout_marginBottom="22dp" />
+
+        <!-- Nút liên hệ và thanh toán -->
         <LinearLayout
             android:orientation="horizontal"
             android:gravity="center"
@@ -136,7 +193,7 @@
                 android:backgroundTint="#1976D2"
                 android:textStyle="bold"
                 android:layout_marginEnd="10dp"
-                android:elevation="3dp"/>
+                android:elevation="3dp" />
 
             <Button
                 android:id="@+id/btnPay"
@@ -149,8 +206,20 @@
                 android:backgroundTint="#009688"
                 android:textStyle="bold"
                 android:layout_marginStart="10dp"
-                android:elevation="3dp"/>
+                android:elevation="3dp" />
         </LinearLayout>
 
+        <!-- Nút đánh giá (nằm riêng bên dưới) -->
+        <Button
+            android:id="@+id/btnReview"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="Đánh giá"
+            android:textAllCaps="false"
+            android:textColor="#fff"
+            android:backgroundTint="#FF9800"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:elevation="3dp"/>
     </LinearLayout>
 </ScrollView>

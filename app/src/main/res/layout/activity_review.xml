@@ -1,0 +1,75 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Đánh giá sản phẩm -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Đánh giá sản phẩm"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp" />
+
+        <RatingBar
+            android:id="@+id/ratingBarProduct"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:numStars="5"
+            android:stepSize="0.5" />
+
+        <EditText
+            android:id="@+id/edtCommentProduct"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nhận xét về sản phẩm"
+            android:minLines="3"
+            android:gravity="top"
+            android:background="@drawable/bg_edittext"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Đánh giá người bán -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Đánh giá người bán"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp" />
+
+        <RatingBar
+            android:id="@+id/ratingBarSeller"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:numStars="5"
+            android:stepSize="0.5" />
+
+        <EditText
+            android:id="@+id/edtCommentSeller"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nhận xét về người bán"
+            android:minLines="3"
+            android:gravity="top"
+            android:background="@drawable/bg_edittext"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Nút Gửi -->
+        <Button
+            android:id="@+id/btnSubmit"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="Gửi đánh giá"
+            android:backgroundTint="#4CAF50"
+            android:textColor="#FFF"
+            android:textStyle="bold" />
+    </LinearLayout>
+</ScrollView>

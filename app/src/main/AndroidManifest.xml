@@ -21,6 +21,7 @@
         <activity android:name=".ForgotPasswordActivity" />
         <activity android:name=".HomeActivity" />
         <activity android:name=".ChatDetailActivity"/>
+        <activity android:name=".ReviewActivity" />
 
         <!-- KHÔNG có dòng này nếu chưa có ChatActivity -->
         <!-- <activity android:name=".ChatActivity" /> -->

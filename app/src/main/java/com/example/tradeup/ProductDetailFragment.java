@@ -3,11 +3,7 @@ package com.example.tradeup;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.DocumentSnapshot;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.view.*;
@@ -17,6 +13,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.*;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -25,14 +23,15 @@ public class ProductDetailFragment extends Fragment {
     private ViewPager2 viewPagerImages;
     private LinearLayout layoutDots;
     private TextView tvName, tvPrice, tvBrand, tvYear, tvQuantity, tvOwner, tvDescription;
-    private Button btnContact, btnPay;
+    private TextView tvProductReviews, tvSellerReviews;
+    private RatingBar productRatingBar, sellerRatingBar;
+    private Button btnContact, btnPay, btnReview;
 
     private Product product;
     private List<String> imageBase64s = new ArrayList<>();
 
     public ProductDetailFragment() {}
 
-    // Nhận Product qua Bundle (Product cần implements Serializable)
     public static ProductDetailFragment newInstance(Product product) {
         ProductDetailFragment fragment = new ProductDetailFragment();
         Bundle args = new Bundle();
@@ -67,26 +66,33 @@ public class ProductDetailFragment extends Fragment {
         tvQuantity = view.findViewById(R.id.tvQuantity);
         tvOwner = view.findViewById(R.id.tvOwner);
         tvDescription = view.findViewById(R.id.tvDescription);
+        tvProductReviews = view.findViewById(R.id.tvProductReviews);
+        tvSellerReviews = view.findViewById(R.id.tvSellerReviews);
+        productRatingBar = view.findViewById(R.id.productRatingBar);
+        sellerRatingBar = view.findViewById(R.id.sellerRatingBar);
         btnContact = view.findViewById(R.id.btnContact);
         btnPay = view.findViewById(R.id.btnPay);
+        btnReview = view.findViewById(R.id.btnReview);
 
         if (product != null) {
-            showProductInfo();
+            showProductInfo(view);
+            loadProductRating();
+            loadSellerRating();
         }
 
         return view;
     }
 
-    private void showProductInfo() {
-        // Slider ảnh
+    private void showProductInfo(View view) {
         viewPagerImages.setAdapter(new ImageSliderAdapter(imageBase64s));
         setupDots(imageBase64s.size());
         viewPagerImages.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
-            public void onPageSelected(int position) { selectDot(position); }
+            public void onPageSelected(int position) {
+                selectDot(position);
+            }
         });
 
-        // Thông tin sản phẩm
         tvName.setText(product.getName());
         tvBrand.setText("Hãng: " + product.getBrand());
         tvYear.setText("Năm sản xuất: " + product.getYear());
@@ -95,36 +101,25 @@ public class ProductDetailFragment extends Fragment {
         NumberFormat nf = NumberFormat.getInstance(new Locale("vi", "VN"));
         tvPrice.setText("Giá: " + nf.format(product.getPrice()) + " VNĐ");
 
-        if (!TextUtils.isEmpty(product.getOwnerName()))
-            tvOwner.setText("Người đăng: " + product.getOwnerName());
-        else
-            tvOwner.setText("Người đăng: (không rõ)");
+        tvOwner.setText(!TextUtils.isEmpty(product.getOwnerName()) ?
+                "Người đăng: " + product.getOwnerName() : "Người đăng: (không rõ)");
 
-        // Mô tả sản phẩm (nếu có)
-        if (product.getDescription() != null && !product.getDescription().isEmpty())
-            tvDescription.setText(product.getDescription());
-        else
-            tvDescription.setText("(Không có mô tả)");
-
-        //Nut lien he
-        // ... [Các phần trên giữ nguyên] ...
+        tvDescription.setText(!TextUtils.isEmpty(product.getDescription()) ?
+                product.getDescription() : "(Không có mô tả)");
 
         btnContact.setOnClickListener(v -> {
-            if (product.getOwnerId() != null && !product.getOwnerId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
-                String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                String otherUserId = product.getOwnerId();
+            String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            String otherUserId = product.getOwnerId();
+
+            if (otherUserId != null && !otherUserId.equals(currentUserId)) {
                 String chatId = (currentUserId.compareTo(otherUserId) < 0)
                         ? currentUserId + "_" + otherUserId : otherUserId + "_" + currentUserId;
 
-                // Lấy avatar chủ sản phẩm
                 FirebaseFirestore.getInstance().collection("users")
                         .document(otherUserId)
                         .get()
                         .addOnSuccessListener(userDoc -> {
-                            String ownerAvatar = "";
-                            if (userDoc.exists()) {
-                                ownerAvatar = userDoc.getString("photoBase64");
-                            }
+                            String ownerAvatar = userDoc.getString("photoBase64");
                             Intent intent = new Intent(getContext(), ChatDetailActivity.class);
                             intent.putExtra("chatId", chatId);
                             intent.putExtra("otherUserId", otherUserId);
@@ -137,15 +132,51 @@ public class ProductDetailFragment extends Fragment {
             }
         });
 
+        btnPay.setOnClickListener(v ->
+                Toast.makeText(getContext(), "Chức năng thanh toán đang phát triển!", Toast.LENGTH_SHORT).show());
 
-
-        // Nút thanh toán (demo)
-        btnPay.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Chức năng thanh toán đang phát triển!", Toast.LENGTH_SHORT).show();
+        btnReview.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), ReviewActivity.class);
+            intent.putExtra("productId", product.getId());
+            intent.putExtra("sellerId", product.getOwnerId());
+            startActivity(intent);
         });
     }
 
-    // --------- SLIDER DOTS -----------
+    private void loadProductRating() {
+        FirebaseFirestore.getInstance()
+                .collection("products")
+                .document(product.getId())
+                .collection("reviews")
+                .get()
+                .addOnSuccessListener(query -> {
+                    float total = 0;
+                    for (DocumentSnapshot doc : query.getDocuments()) {
+                        total += doc.getDouble("rating");
+                    }
+                    float avg = query.size() > 0 ? total / query.size() : 0;
+                    productRatingBar.setRating(avg);
+                    tvProductReviews.setText("(" + query.size() + " đánh giá)");
+                });
+    }
+
+    private void loadSellerRating() {
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(product.getOwnerId())
+                .collection("ratings")
+                .get()
+                .addOnSuccessListener(query -> {
+                    float total = 0;
+                    for (DocumentSnapshot doc : query.getDocuments()) {
+                        total += doc.getDouble("rating");
+                    }
+                    float avg = query.size() > 0 ? total / query.size() : 0;
+                    sellerRatingBar.setRating(avg);
+                    tvSellerReviews.setText("(" + query.size() + " đánh giá)");
+                });
+    }
+
     private void setupDots(int count) {
         layoutDots.removeAllViews();
         for (int i = 0; i < count; i++) {
@@ -167,10 +198,13 @@ public class ProductDetailFragment extends Fragment {
         }
     }
 
-    // --------- ADAPTER SLIDER ẢNH ----------
     private class ImageSliderAdapter extends RecyclerView.Adapter<ImageSliderAdapter.ImageViewHolder> {
-        private List<String> images;
-        public ImageSliderAdapter(List<String> images) { this.images = images; }
+        private final List<String> images;
+
+        public ImageSliderAdapter(List<String> images) {
+            this.images = images;
+        }
+
         @NonNull
         @Override
         public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -182,6 +216,7 @@ public class ProductDetailFragment extends Fragment {
             img.setScaleType(ImageView.ScaleType.CENTER_CROP);
             return new ImageViewHolder(img);
         }
+
         @Override
         public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
             Bitmap bitmap = base64ToBitmap(images.get(position));
@@ -190,18 +225,28 @@ public class ProductDetailFragment extends Fragment {
             else
                 holder.imgView.setImageResource(R.drawable.bg_thumbbar);
         }
+
         @Override
-        public int getItemCount() { return images.size(); }
+        public int getItemCount() {
+            return images.size();
+        }
+
         class ImageViewHolder extends RecyclerView.ViewHolder {
             ImageView imgView;
-            ImageViewHolder(View v) { super(v); imgView = (ImageView) v; }
+
+            ImageViewHolder(View v) {
+                super(v);
+                imgView = (ImageView) v;
+            }
         }
     }
-    // Convert base64 -> Bitmap
+
     private Bitmap base64ToBitmap(String base64Str) {
         try {
             byte[] decodedBytes = Base64.decode(base64Str, Base64.DEFAULT);
             return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
-        } catch (Exception e) { return null; }
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
