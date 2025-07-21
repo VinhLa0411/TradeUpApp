@@ -1,0 +1,8 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_block_user"
+        android:title="Chặn người dùng" />
+    <item
+        android:id="@+id/menu_unblock_user"
+        android:title="Bỏ chặn người dùng" />
+</menu>

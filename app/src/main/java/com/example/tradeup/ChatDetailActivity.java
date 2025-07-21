@@ -40,14 +40,12 @@ public class ChatDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_detail);
 
-        // Ánh xạ các view
         rvMessages = findViewById(R.id.rvMessages);
         etMessage = findViewById(R.id.etMessage);
         btnSend = findViewById(R.id.btnSend);
         btnSendImage = findViewById(R.id.btnSendImage);
         btnEmoji = findViewById(R.id.btnEmoji);
 
-        // Emoji popup đúng rootView để hiện dưới cùng
         emojiPopup = EmojiPopup.Builder
                 .fromRootView(findViewById(android.R.id.content))
                 .setKeyboardAnimationStyle(android.R.style.Animation_InputMethod)
@@ -55,11 +53,9 @@ public class ChatDetailActivity extends AppCompatActivity {
 
         btnEmoji.setOnClickListener(v -> emojiPopup.toggle());
         etMessage.setOnClickListener(v -> {
-            if (emojiPopup.isShowing()) {
-                emojiPopup.dismiss();
-            }
+            if (emojiPopup.isShowing()) emojiPopup.dismiss();
         });
-        // Nhận dữ liệu chat
+
         chatId = getIntent().getStringExtra("chatId");
         otherUserId = getIntent().getStringExtra("otherUserId");
         otherUserName = getIntent().getStringExtra("otherUserName");
@@ -68,6 +64,7 @@ public class ChatDetailActivity extends AppCompatActivity {
         setTitle("Chat với " + (otherUserName != null ? otherUserName : "Người dùng"));
 
         fetchAvatarAndInitChat();
+        checkBlockStatus();
 
         btnSend.setOnClickListener(v -> sendMessage(null));
         btnSendImage.setOnClickListener(v -> pickImage());
@@ -108,10 +105,72 @@ public class ChatDetailActivity extends AppCompatActivity {
                 });
     }
 
+    private void checkBlockStatus() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("blocked_users")
+                .document(currentUserId)
+                .collection("blocked")
+                .document(otherUserId)
+                .get()
+                .addOnSuccessListener(blockedByMe -> {
+                    if (blockedByMe.exists()) {
+                        disableChatUI("Bạn đã chặn người này");
+                    } else {
+                        db.collection("blocked_users")
+                                .document(otherUserId)
+                                .collection("blocked")
+                                .document(currentUserId)
+                                .get()
+                                .addOnSuccessListener(blockedMe -> {
+                                    if (blockedMe.exists()) {
+                                        disableChatUI("Bạn đã bị chặn bởi người này");
+                                    }
+                                });
+                    }
+                });
+    }
+
+    private void disableChatUI(String message) {
+        etMessage.setEnabled(false);
+        etMessage.setHint(message);
+        btnSend.setEnabled(false);
+        btnSendImage.setEnabled(false);
+        btnEmoji.setEnabled(false);
+    }
+
     private void sendMessage(@Nullable String imageBase64) {
         String text = etMessage.getText().toString().trim();
         if (text.isEmpty() && imageBase64 == null) return;
 
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("blocked_users")
+                .document(otherUserId)
+                .collection("blocked")
+                .document(currentUserId)
+                .get()
+                .addOnSuccessListener(blockedMe -> {
+                    if (blockedMe.exists()) {
+                        Toast.makeText(this, "Bạn đã bị chặn bởi người này", Toast.LENGTH_SHORT).show();
+                    } else {
+                        db.collection("blocked_users")
+                                .document(currentUserId)
+                                .collection("blocked")
+                                .document(otherUserId)
+                                .get()
+                                .addOnSuccessListener(blockedByMe -> {
+                                    if (blockedByMe.exists()) {
+                                        Toast.makeText(this, "Bạn đã chặn người này", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        actuallySendMessage(text, imageBase64);
+                                    }
+                                });
+                    }
+                });
+    }
+
+    private void actuallySendMessage(String text, @Nullable String imageBase64) {
         Map<String, Object> msg = new HashMap<>();
         msg.put("senderId", currentUserId);
         msg.put("receiverId", otherUserId);
