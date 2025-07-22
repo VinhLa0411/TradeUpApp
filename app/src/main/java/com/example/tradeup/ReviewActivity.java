@@ -2,11 +2,11 @@ package com.example.tradeup;
 
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -60,35 +60,49 @@ public class ReviewActivity extends AppCompatActivity {
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        // Gửi đánh giá sản phẩm (chỉ nếu người đánh giá KHÔNG phải là chủ sản phẩm)
-        if (ratingProduct > 0 && !currentUserId.equals(sellerId)) {
-            Map<String, Object> productReview = new HashMap<>();
-            productReview.put("userId", currentUserId);
-            productReview.put("rating", ratingProduct);
-            productReview.put("comment", commentProduct);
-            productReview.put("timestamp", System.currentTimeMillis());
+        db.collection("users").document(currentUserId)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    String name = snapshot.getString("name");
+                    String avatar = snapshot.getString("photoBase64");
 
-            db.collection("products")
-                    .document(productId)
-                    .collection("reviews")
-                    .add(productReview);
-        }
+                    // Gửi đánh giá sản phẩm
+                    if (ratingProduct > 0) {
+                        Map<String, Object> productReview = new HashMap<>();
+                        productReview.put("userId", currentUserId);
+                        productReview.put("userName", name);
+                        productReview.put("userAvatar", avatar);
+                        productReview.put("rating", ratingProduct);
+                        productReview.put("comment", commentProduct);
+                        productReview.put("timestamp", System.currentTimeMillis());
 
-        // Gửi đánh giá người bán
-        if (ratingSeller > 0 && !currentUserId.equals(sellerId)) {
-            Map<String, Object> sellerReview = new HashMap<>();
-            sellerReview.put("fromUserId", currentUserId);
-            sellerReview.put("rating", ratingSeller);
-            sellerReview.put("comment", commentSeller);
-            sellerReview.put("timestamp", System.currentTimeMillis());
+                        db.collection("products")
+                                .document(productId)
+                                .collection("reviews")
+                                .add(productReview);
+                    }
 
-            db.collection("users")
-                    .document(sellerId)
-                    .collection("ratings")
-                    .add(sellerReview);
-        }
+                    // Gửi đánh giá người bán
+                    if (ratingSeller > 0) {
+                        Map<String, Object> sellerReview = new HashMap<>();
+                        sellerReview.put("fromUserId", currentUserId);
+                        sellerReview.put("fromUserName", name);
+                        sellerReview.put("fromUserAvatar", avatar);
+                        sellerReview.put("rating", ratingSeller);
+                        sellerReview.put("comment", commentSeller);
+                        sellerReview.put("timestamp", System.currentTimeMillis());
 
-        Toast.makeText(this, "Đánh giá đã được gửi!", Toast.LENGTH_SHORT).show();
-        finish();
+                        db.collection("users")
+                                .document(sellerId)
+                                .collection("ratings")
+                                .add(sellerReview);
+                    }
+
+                    Toast.makeText(this, "Đánh giá đã được gửi!", Toast.LENGTH_SHORT).show();
+                    finish();
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Lỗi khi lấy thông tin người dùng", Toast.LENGTH_SHORT).show()
+                );
     }
 }

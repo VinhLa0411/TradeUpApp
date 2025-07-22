@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Lớp gradient xanh dương nhạt sang trắng -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:angle="100"
+                android:startColor="#00FFD1"
+                android:endColor="#FFFFFF" />
+        </shape>
+    </item>
+</layer-list>

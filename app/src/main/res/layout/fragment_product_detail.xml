@@ -147,6 +147,8 @@
             android:textColor="#555555"
             android:layout_marginBottom="12dp" />
 
+
+
         <!-- Đánh giá người bán -->
         <TextView
             android:layout_width="match_parent"
@@ -174,6 +176,13 @@
             android:textColor="#555555"
             android:layout_marginBottom="22dp" />
 
+        <!-- Danh sách đánh giá cụ thể -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvReviews"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:nestedScrollingEnabled="false" />
         <!-- Nút liên hệ và thanh toán -->
         <LinearLayout
             android:orientation="horizontal"

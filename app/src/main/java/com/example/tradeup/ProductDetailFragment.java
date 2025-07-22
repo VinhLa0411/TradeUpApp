@@ -3,6 +3,11 @@ package com.example.tradeup;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -11,11 +16,11 @@ import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.*;
-
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -26,6 +31,7 @@ public class ProductDetailFragment extends Fragment {
     private TextView tvProductReviews, tvSellerReviews;
     private RatingBar productRatingBar, sellerRatingBar;
     private Button btnContact, btnPay, btnReview;
+    private RecyclerView rvReviews;
 
     private Product product;
     private List<String> imageBase64s = new ArrayList<>();
@@ -53,8 +59,7 @@ public class ProductDetailFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_product_detail, container, false);
 
         viewPagerImages = view.findViewById(R.id.viewPagerImages);
@@ -73,44 +78,19 @@ public class ProductDetailFragment extends Fragment {
         btnContact = view.findViewById(R.id.btnContact);
         btnPay = view.findViewById(R.id.btnPay);
         btnReview = view.findViewById(R.id.btnReview);
-        btnPay = view.findViewById(R.id.btnPay);
-        btnPay.setText("Thêm vào giỏ hàng"); // Đổi text nút
-        btnPay.setOnClickListener(v -> addToCart()); // Gọi hàm thêm giỏ hàng
+        rvReviews = view.findViewById(R.id.rvReviews);
 
         if (product != null) {
-            showProductInfo(view);
+            showProductInfo();
             loadProductRating();
             loadSellerRating();
+            loadReviews();
         }
 
         return view;
     }
-    private void addToCart() {
-        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        Map<String, Object> cartItem = new HashMap<>();
-        cartItem.put("productId", product.getId());
-        cartItem.put("name", product.getName());
-        cartItem.put("price", product.getPrice());
-        cartItem.put("imageBase64", product.getImages().isEmpty() ? "" : product.getImages().get(0));
-        cartItem.put("quantity", 1);
-        cartItem.put("timestamp", System.currentTimeMillis());
-
-        db.collection("carts")
-                .document(currentUserId)
-                .collection("items")
-                .document(product.getId())
-                .set(cartItem, SetOptions.merge())
-                .addOnSuccessListener(unused ->
-                        Toast.makeText(getContext(), "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show()
-                )
-                .addOnFailureListener(e ->
-                        Toast.makeText(getContext(), "Lỗi thêm giỏ hàng", Toast.LENGTH_SHORT).show()
-                );
-    }
-
-    private void showProductInfo(View view) {
+    private void showProductInfo() {
         viewPagerImages.setAdapter(new ImageSliderAdapter(imageBase64s));
         setupDots(imageBase64s.size());
         viewPagerImages.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
@@ -124,25 +104,37 @@ public class ProductDetailFragment extends Fragment {
         tvBrand.setText("Hãng: " + product.getBrand());
         tvYear.setText("Năm sản xuất: " + product.getYear());
         tvQuantity.setText("Số lượng: " + product.getQuantity());
-
         NumberFormat nf = NumberFormat.getInstance(new Locale("vi", "VN"));
         tvPrice.setText("Giá: " + nf.format(product.getPrice()) + " VNĐ");
 
-        tvOwner.setText(!TextUtils.isEmpty(product.getOwnerName()) ?
-                "Người đăng: " + product.getOwnerName() : "Người đăng: (không rõ)");
+        if (!TextUtils.isEmpty(product.getOwnerName())) {
+            SpannableString spannable = new SpannableString("Người đăng: " + product.getOwnerName());
+            ClickableSpan clickable = new ClickableSpan() {
+                @Override
+                public void onClick(@NonNull View widget) {
+                    Intent intent = new Intent(getContext(), ViewUserActivity.class);
+                    intent.putExtra("userId", product.getOwnerId());
+                    startActivity(intent);
+                }
+            };
+            spannable.setSpan(clickable, 12, spannable.length(), 0);
+            tvOwner.setText(spannable);
+            tvOwner.setMovementMethod(LinkMovementMethod.getInstance());
+        } else {
+            tvOwner.setText("Người đăng: (không rõ)");
+        }
 
-        tvDescription.setText(!TextUtils.isEmpty(product.getDescription()) ?
-                product.getDescription() : "(Không có mô tả)");
+        tvDescription.setText(!TextUtils.isEmpty(product.getDescription()) ? product.getDescription() : "(Không có mô tả)");
 
         btnContact.setOnClickListener(v -> {
             String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
             String otherUserId = product.getOwnerId();
-
             if (otherUserId != null && !otherUserId.equals(currentUserId)) {
                 String chatId = (currentUserId.compareTo(otherUserId) < 0)
-                        ? currentUserId + "_" + otherUserId : otherUserId + "_" + currentUserId;
-
-                FirebaseFirestore.getInstance().collection("users")
+                        ? currentUserId + "_" + otherUserId
+                        : otherUserId + "_" + currentUserId;
+                FirebaseFirestore.getInstance()
+                        .collection("users")
                         .document(otherUserId)
                         .get()
                         .addOnSuccessListener(userDoc -> {
@@ -161,9 +153,14 @@ public class ProductDetailFragment extends Fragment {
 
         btnPay.setText("Thêm vào giỏ hàng");
         btnPay.setOnClickListener(v -> {
+            String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
             if (product != null) {
-                CartManager.getInstance().addToCart(product);
-                Toast.makeText(getContext(), "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+                if (product.getOwnerId().equals(currentUserId)) {
+                    Toast.makeText(getContext(), "Bạn không thể mua sản phẩm của chính mình!", Toast.LENGTH_SHORT).show();
+                } else {
+                    CartManager.getInstance().addToCart(product);
+                    Toast.makeText(getContext(), "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -210,6 +207,24 @@ public class ProductDetailFragment extends Fragment {
                 });
     }
 
+    private void loadReviews() {
+        rvReviews.setLayoutManager(new LinearLayoutManager(getContext()));
+        FirebaseFirestore.getInstance()
+                .collection("products")
+                .document(product.getId())
+                .collection("reviews")
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    List<Review> reviews = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        Review r = doc.toObject(Review.class);
+                        reviews.add(r);
+                    }
+                    rvReviews.setAdapter(new ReviewAdapter(reviews, product.getId(), product.getOwnerId()));
+                });
+    }
+
     private void setupDots(int count) {
         layoutDots.removeAllViews();
         for (int i = 0; i < count; i++) {
@@ -253,10 +268,11 @@ public class ProductDetailFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
             Bitmap bitmap = base64ToBitmap(images.get(position));
-            if (bitmap != null)
+            if (bitmap != null) {
                 holder.imgView.setImageBitmap(bitmap);
-            else
+            } else {
                 holder.imgView.setImageResource(R.drawable.bg_thumbbar);
+            }
         }
 
         @Override
