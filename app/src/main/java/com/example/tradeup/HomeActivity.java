@@ -14,7 +14,7 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
+        CartManager.getInstance().init(this);
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         // Load Fragment đầu tiên là Home
         loadFragment(new HomeFragment());

@@ -154,6 +154,13 @@
             android:textColor="#fff"
             android:layout_marginBottom="14dp" />
 
+        <Button
+            android:id="@+id/btnTransactionHistory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Lịch sử giao dịch"
+            android:layout_marginTop="16dp"/>
+
         <!-- Nút Đăng xuất -->
         <Button
             android:id="@+id/btnLogout"

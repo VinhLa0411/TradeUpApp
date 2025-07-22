@@ -1,5 +1,6 @@
 package com.example.tradeup.fragment;
 
+import com.example.tradeup.TransactionHistoryFragment;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -31,7 +32,7 @@ public class AccountFragment extends Fragment {
     private ImageView imgAvatar;
     private TextView tvName, tvDob, tvPhone, tvHomeTown, tvEmail;
     private EditText etName, etDob, etPhone, etHomeTown;
-    private Button btnLogout, btnEditOrSave, btnChooseAvatar, btnDeleteAccount;
+    private Button btnLogout, btnEditOrSave, btnChooseAvatar, btnDeleteAccount, btnTransactionHistory;
     private LinearLayout viewInfoLayout, editInfoLayout;
 
     private FirebaseAuth mAuth;
@@ -67,6 +68,7 @@ public class AccountFragment extends Fragment {
         btnEditOrSave = view.findViewById(R.id.btnEditOrSave);
         btnChooseAvatar = view.findViewById(R.id.btnChooseAvatar);
         btnDeleteAccount = view.findViewById(R.id.btnDeleteAccount);
+        btnTransactionHistory = view.findViewById(R.id.btnTransactionHistory);
 
         viewInfoLayout = view.findViewById(R.id.viewInfoLayout);
         editInfoLayout = view.findViewById(R.id.editInfoLayout);
@@ -97,14 +99,19 @@ public class AccountFragment extends Fragment {
             if (isEditMode) chooseImage();
         });
 
-        // Ngăn bàn phím bật lên, chỉ chọn qua dialog
         etDob.setFocusable(false);
         etDob.setOnClickListener(v -> {
             if (isEditMode) showStepByStepDatePicker();
         });
 
-        // Xử lý nút Hủy tài khoản
         btnDeleteAccount.setOnClickListener(v -> confirmDeleteAccount());
+
+        btnTransactionHistory.setOnClickListener(v -> {
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new TransactionHistoryFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
 
         return view;
     }
@@ -205,14 +212,13 @@ public class AccountFragment extends Fragment {
                 .update(update)
                 .addOnSuccessListener(unused -> {
                     Toast.makeText(getContext(), "Đã cập nhật!", Toast.LENGTH_SHORT).show();
-                    loadProfile(); // Load lại và chuyển về view mode
+                    loadProfile();
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(getContext(), "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                 );
     }
 
-    // Step-by-step DatePicker: Năm -> Tháng -> Ngày
     private void showStepByStepDatePicker() {
         String[] parts = etDob.getText().toString().split("/");
         final int[] selectedDay = {1};
@@ -291,7 +297,6 @@ public class AccountFragment extends Fragment {
         db.collection(USER_COLLECTION).document(uid)
                 .delete()
                 .addOnSuccessListener(aVoid -> {
-                    // Xóa luôn tài khoản Auth
                     currentUser.delete()
                             .addOnSuccessListener(unused -> {
                                 Toast.makeText(getContext(), "Đã xóa tài khoản!", Toast.LENGTH_SHORT).show();

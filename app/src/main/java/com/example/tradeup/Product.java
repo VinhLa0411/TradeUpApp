@@ -50,7 +50,7 @@ public class Product implements Serializable {
     public List<String> getImages() { return images; }
     public void setImages(List<String> images) { this.images = images; }
 
-    // Aliases nếu bạn dùng tên cũ
+    // Aliases cho images nếu dùng tên khác
     public List<String> getImagesBase64() { return images; }
     public void setImagesBase64(List<String> imagesBase64) { this.images = imagesBase64; }
 
@@ -71,4 +71,21 @@ public class Product implements Serializable {
 
     public long getCreatedAt() { return createdAt; }
     public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
+
+    // ==================== DEBUG ====================
+    @Override
+    public String toString() {
+        return "Product{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", quantity=" + quantity +
+                ", brand='" + manufacturer + '\'' +
+                ", year=" + year +
+                ", price=" + price +
+                ", ownerId='" + ownerId + '\'' +
+                ", ownerName='" + ownerName + '\'' +
+                ", views=" + views +
+                ", createdAt=" + createdAt +
+                '}';
+    }
 }

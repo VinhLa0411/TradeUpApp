@@ -3,15 +3,15 @@ package com.example.tradeup.fragment;
 import android.os.Bundle;
 import android.view.*;
 import android.widget.*;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.*;
 
-import com.example.tradeup.HomeProductAdapter;
-import com.example.tradeup.Product;
-import com.example.tradeup.ProductDetailFragment;
 import com.example.tradeup.R;
+import com.example.tradeup.*;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.*;
 
 import java.util.*;
@@ -26,11 +26,11 @@ public class HomeFragment extends Fragment {
     private SearchView searchView;
     private Spinner spinnerFilter, spinnerSort;
     private ArrayAdapter<String> filterAdapter, sortAdapter;
+    private TextView tvCartBadge;
 
     private final List<String> brandFilterList = new ArrayList<>(Collections.singletonList("Tất cả"));
     private final List<String> sortOptions = Arrays.asList(
-            "Mặc định",
-            "Giá tăng dần", "Giá giảm dần",
+            "Mặc định", "Giá tăng dần", "Giá giảm dần",
             "Tên A-Z", "Tên Z-A",
             "Mới nhất", "Cũ nhất"
     );
@@ -43,12 +43,15 @@ public class HomeFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
+        // Ánh xạ view
         rvProducts = view.findViewById(R.id.rvProducts);
         progressBar = view.findViewById(R.id.progressBar);
         searchView = view.findViewById(R.id.searchView);
         spinnerFilter = view.findViewById(R.id.spinnerFilter);
         spinnerSort = view.findViewById(R.id.spinnerSort);
+        tvCartBadge = view.findViewById(R.id.tvCartBadge);
 
+        // Khởi tạo adapter sản phẩm
         adapter = new HomeProductAdapter(getContext(), filteredList, product -> {
             requireActivity().getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, ProductDetailFragment.newInstance(product))
@@ -59,11 +62,10 @@ public class HomeFragment extends Fragment {
         rvProducts.setLayoutManager(new LinearLayoutManager(getContext()));
         rvProducts.setAdapter(adapter);
 
-        // Sắp xếp
+        // Spinner sắp xếp
         sortAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, sortOptions);
         sortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerSort.setAdapter(sortAdapter);
-
         spinnerSort.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 currentSortOption = sortOptions.get(position);
@@ -72,6 +74,7 @@ public class HomeFragment extends Fragment {
             @Override public void onNothingSelected(AdapterView<?> parent) {}
         });
 
+        // Tìm kiếm theo tên
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override public boolean onQueryTextSubmit(String query) { return false; }
             @Override public boolean onQueryTextChange(String newText) {
@@ -80,6 +83,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
+        // Spinner lọc theo hãng
         spinnerFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 filterAndSort();
@@ -87,8 +91,34 @@ public class HomeFragment extends Fragment {
             @Override public void onNothingSelected(AdapterView<?> parent) {}
         });
 
+        // Nút giỏ hàng nổi
+        FloatingActionButton fabCart = view.findViewById(R.id.fabCart);
+        fabCart.setOnClickListener(v -> {
+            CartBottomSheetDialog dialog = new CartBottomSheetDialog();
+            dialog.setOnCartChangedListener(() -> {
+                updateCartBadge();  // Cập nhật số hiển thị trên icon
+                loadProducts();     // Reload danh sách sản phẩm để cập nhật số lượng mới
+            });
+            dialog.show(getChildFragmentManager(), "cart");
+        });
+
+        updateCartBadge();
         loadProducts();
         return view;
+    }
+
+    private void updateCartBadge() {
+        if (tvCartBadge == null) return;
+        int total = 0;
+        for (CartItem item : CartManager.getInstance().getCartItems()) {
+            total += item.getQuantity();
+        }
+        if (total > 0) {
+            tvCartBadge.setText(String.valueOf(total));
+            tvCartBadge.setVisibility(View.VISIBLE);
+        } else {
+            tvCartBadge.setVisibility(View.GONE);
+        }
     }
 
     private void loadProducts() {
@@ -97,8 +127,11 @@ public class HomeFragment extends Fragment {
                 .orderBy("createdAt", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!isAdded()) return;
+
                     productList.clear();
                     Set<String> brands = new HashSet<>();
+
                     for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
                         Product p = doc.toObject(Product.class);
                         if (p != null) {
@@ -113,10 +146,12 @@ public class HomeFragment extends Fragment {
                         }
                     }
 
+                    // Cập nhật Spinner hãng
                     brandFilterList.clear();
                     brandFilterList.add("Tất cả");
                     brandFilterList.addAll(brands);
 
+                    if (!isAdded()) return;
                     filterAdapter = new ArrayAdapter<>(requireContext(),
                             android.R.layout.simple_spinner_item, brandFilterList);
                     filterAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

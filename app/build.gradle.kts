@@ -22,6 +22,7 @@ android {
 }
 
 dependencies {
+    implementation ("com.google.code.gson:gson:2.10.1")
     implementation ("com.vanniktech:emoji-google:0.9.0")
     implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
 

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:background="@drawable/bg_card_login"
+    android:layout_marginBottom="8dp">
+
+    <!-- Tên sản phẩm -->
+    <TextView
+        android:id="@+id/tvCartName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tên sản phẩm"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#000000" />
+
+    <!-- Giá sản phẩm -->
+    <TextView
+        android:id="@+id/tvCartPrice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="100.000 đ"
+        android:textSize="14sp"
+        android:textColor="#555555"
+        android:layout_marginTop="2dp" />
+
+    <!-- Số lượng + nút xóa -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="6dp">
+
+        <ImageButton
+            android:id="@+id/btnMinus"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_btn_circle"
+            android:src="@android:drawable/ic_media_previous" />
+
+        <TextView
+            android:id="@+id/tvQuantity"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="1"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#000000" />
+
+        <ImageButton
+            android:id="@+id/btnPlus"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_btn_circle"
+            android:src="@android:drawable/ic_media_next" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="1dp" />
+
+        <Button
+            android:id="@+id/btnRemove"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="Xóa"
+            android:backgroundTint="#D32F2F"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            android:layout_marginStart="12dp"/>
+    </LinearLayout>
+</LinearLayout>

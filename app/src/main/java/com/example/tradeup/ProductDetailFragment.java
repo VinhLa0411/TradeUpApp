@@ -73,6 +73,9 @@ public class ProductDetailFragment extends Fragment {
         btnContact = view.findViewById(R.id.btnContact);
         btnPay = view.findViewById(R.id.btnPay);
         btnReview = view.findViewById(R.id.btnReview);
+        btnPay = view.findViewById(R.id.btnPay);
+        btnPay.setText("Thêm vào giỏ hàng"); // Đổi text nút
+        btnPay.setOnClickListener(v -> addToCart()); // Gọi hàm thêm giỏ hàng
 
         if (product != null) {
             showProductInfo(view);
@@ -81,6 +84,30 @@ public class ProductDetailFragment extends Fragment {
         }
 
         return view;
+    }
+    private void addToCart() {
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        Map<String, Object> cartItem = new HashMap<>();
+        cartItem.put("productId", product.getId());
+        cartItem.put("name", product.getName());
+        cartItem.put("price", product.getPrice());
+        cartItem.put("imageBase64", product.getImages().isEmpty() ? "" : product.getImages().get(0));
+        cartItem.put("quantity", 1);
+        cartItem.put("timestamp", System.currentTimeMillis());
+
+        db.collection("carts")
+                .document(currentUserId)
+                .collection("items")
+                .document(product.getId())
+                .set(cartItem, SetOptions.merge())
+                .addOnSuccessListener(unused ->
+                        Toast.makeText(getContext(), "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show()
+                )
+                .addOnFailureListener(e ->
+                        Toast.makeText(getContext(), "Lỗi thêm giỏ hàng", Toast.LENGTH_SHORT).show()
+                );
     }
 
     private void showProductInfo(View view) {
@@ -132,8 +159,14 @@ public class ProductDetailFragment extends Fragment {
             }
         });
 
-        btnPay.setOnClickListener(v ->
-                Toast.makeText(getContext(), "Chức năng thanh toán đang phát triển!", Toast.LENGTH_SHORT).show());
+        btnPay.setText("Thêm vào giỏ hàng");
+        btnPay.setOnClickListener(v -> {
+            if (product != null) {
+                CartManager.getInstance().addToCart(product);
+                Toast.makeText(getContext(), "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+            }
+        });
+
 
         btnReview.setOnClickListener(v -> {
             Intent intent = new Intent(getContext(), ReviewActivity.class);

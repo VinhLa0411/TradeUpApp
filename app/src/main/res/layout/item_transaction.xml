@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:layout_marginStart="12dp"
+    android:layout_marginEnd="12dp"
+    card_view:cardElevation="6dp"
+    card_view:cardCornerRadius="16dp"
+    card_view:cardBackgroundColor="@android:color/white">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Ảnh sản phẩm -->
+        <ImageView
+            android:id="@+id/imgProduct"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_add_photo"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/bg_spinner_white_rounded"
+            android:clipToOutline="true" />
+
+        <!-- Thông tin sản phẩm -->
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/tvName"
+                android:text="Tên sản phẩm"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#333333"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/tvPrice"
+                android:text="Giá: 27.500.000 đ"
+                android:textColor="#2196F3"
+                android:layout_marginTop="4dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/tvQuantity"
+                android:text="Số lượng: 2"
+                android:layout_marginTop="2dp"
+                android:textColor="#444444"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/tvTotal"
+                android:text="Tổng tiền: 55.000.000 đ"
+                android:layout_marginTop="2dp"
+                android:textColor="#E91E63"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/tvTime"
+                android:text="Thời gian: 21/07/2025 22:53"
+                android:layout_marginTop="2dp"
+                android:textColor="#757575"
+                android:textSize="13sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+        <ImageButton
+            android:id="@+id/btnDelete"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="center_vertical"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_close_red"
+            android:contentDescription="Xoá giao dịch" />
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
